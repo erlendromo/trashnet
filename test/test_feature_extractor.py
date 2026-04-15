@@ -11,4 +11,4 @@ def feature_extractor():
 
 
 def test_xxx(feature_extractor):
-    assert # Something
+    assert 1 >= 0

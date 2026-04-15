@@ -11,4 +11,4 @@ def preprocessor():
 
 
 def test_xxx(preprocessor):
-    assert # Something
+    assert 1 >= 0

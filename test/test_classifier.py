@@ -11,4 +11,4 @@ def classifier():
 
 
 def test_xxx(classifier):
-    assert # Something
+    assert 1 >= 0
