@@ -1,10 +1,10 @@
 # Trashnet
 This is a project for the Computer Vision (IDIG4004) course at NTNU Gjøvik 2026.
-The project is inspired by the original [trashnet][https://github.com/garythung/trashnet] repository, and leverages their dataset.
+The project is inspired by the original [trashnet](https://github.com/garythung/trashnet) repository, and leverages their dataset.
 This project will however not leverage any deep learning, but rather use traditional methods to classify the provided images.
 
 ## Dataset
-The dataset used for this project can be found [here][https://huggingface.co/datasets/garythung/trashnet]. Download the original-dataset, and follow along the guide for the usage. The dataset is comprised of 2527 images:
+The dataset used for this project can be found [here](https://huggingface.co/datasets/garythung/trashnet). Download the original-dataset, and follow along the guide for the usage. The dataset is comprised of 2527 images:
 
 - 501 glass
 - 594 paper
@@ -30,4 +30,4 @@ For ease-of-use, download the `Makefile` extension for your OS.
 
 ## Acknowledgements
 I want to give a shoutout to my fellow students, and the course coordinator!
-Special thanks to the developers of the original [trashnet][https://github.com/garythung/trashnet] for providing the dataset.
+Special thanks to the developers of the original [trashnet](https://github.com/garythung/trashnet) for providing the dataset.
