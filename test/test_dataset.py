@@ -14,43 +14,46 @@ def create_fake_dataset(base_path, labels=("glass", "metal"), samples_per_label=
         os.makedirs(label_dir, exist_ok=True)
 
         for i in range(samples_per_label):
-            img = np.zeros((10, 10, 3), dtype=np.uint8)
+            image = np.zeros((10, 10, 3), dtype=np.uint8)
 
-            # Make filenames unique and explicit
             file_path = os.path.join(label_dir, f"{label}_{i}.jpg")
 
-            cv2.imwrite(file_path, img)
+            cv2.imwrite(file_path, image)
 
     return list(labels)
 
 
 def test_dataset_load():
-    with tempfile.TemporaryDirectory() as tmp:
-        create_fake_dataset(tmp)
+    labels = ("glass", "metal")
+    samples_per_label = 10
+    total_samples = len(labels) * samples_per_label
 
-        dataset = Dataset(labels=("glass", "metal"))
-        dataset.dataset_path = tmp
+    with tempfile.TemporaryDirectory() as temp:
+        create_fake_dataset(temp, labels, samples_per_label)
+
+        dataset = Dataset(labels=labels)
+        dataset.dataset_path = temp
 
         data = dataset._load()
 
-        assert len(data) == 20
+        assert len(data) == total_samples
         assert all(len(item) == 2 for item in data)
 
 
 def test_file_format_filtering():
-    with tempfile.TemporaryDirectory() as tmp:
-        os.makedirs(os.path.join(tmp, "glass"))
+    labels = ("glass",)
 
-        # valid image
-        img = np.zeros((10, 10, 3), dtype=np.uint8)
-        cv2.imwrite(os.path.join(tmp, "glass/1.jpg"), img)
+    with tempfile.TemporaryDirectory() as temp:
+        os.makedirs(os.path.join(temp, labels[0]))
 
-        # invalid file
-        with open(os.path.join(tmp, "glass/1.txt"), "w") as f:
+        image = np.zeros((10, 10, 3), dtype=np.uint8)
+        cv2.imwrite(os.path.join(temp, f"{labels[0]}/1.jpg"), image)
+
+        with open(os.path.join(temp, f"{labels[0]}/1.txt"), "w") as f:
             f.write("not an image")
 
-        dataset = Dataset(labels=("glass",))
-        dataset.dataset_path = tmp
+        dataset = Dataset(labels=labels)
+        dataset.dataset_path = temp
 
         data = dataset._load()
 
@@ -58,34 +61,43 @@ def test_file_format_filtering():
 
 
 def test_split_sizes():
-    with tempfile.TemporaryDirectory() as tmp:
-        create_fake_dataset(tmp)
+    labels = ("glass", "metal")
+    samples_per_label = 10
+    total_samples = len(labels) * samples_per_label
 
-        dataset = Dataset(labels=("glass", "metal"))
-        dataset.dataset_path = tmp
+    with tempfile.TemporaryDirectory() as temp:
+        create_fake_dataset(temp, labels, samples_per_label)
+
+        dataset = Dataset(labels=labels)
+        dataset.dataset_path = temp
 
         train, val, test = dataset.load_and_split()
 
         total = len(train) + len(val) + len(test)
 
-        assert total == 20
+        assert total == total_samples
 
 
 def test_empty_dataset_raises():
-    with tempfile.TemporaryDirectory() as tmp:
-        dataset = Dataset(labels=("glass",))
-        dataset.dataset_path = tmp
+    labels = ("glass",)
+
+    with tempfile.TemporaryDirectory() as temp:
+        dataset = Dataset(labels=labels)
+        dataset.dataset_path = temp
 
         with pytest.raises(ValueError):
             dataset.load_and_split()
 
 
 def test_labels_preserved():
-    with tempfile.TemporaryDirectory() as tmp:
-        create_fake_dataset(tmp)
+    labels = ("glass", "metal")
+    samples_per_label = 10
 
-        dataset = Dataset(labels=("glass", "metal"))
-        dataset.dataset_path = tmp
+    with tempfile.TemporaryDirectory() as temp:
+        create_fake_dataset(temp, labels, samples_per_label)
+
+        dataset = Dataset(labels=labels)
+        dataset.dataset_path = temp
 
         train, val, test = dataset.load_and_split()
 
