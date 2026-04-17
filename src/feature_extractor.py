@@ -27,14 +27,15 @@ class FeatureExtractor:
         self._lbp_features()
         self._superpixel_features()
 
-        self.all_features = []
+        all_features = []
+        all_features.extend(self.color_features)
+        all_features.extend(self.hog_features)
+        all_features.extend(self.lbp_features)
+        all_features.extend(self.superpixel_features)
 
-        self.all_features.extend(self.color_features)
-        self.all_features.extend(self.hog_features)
-        self.all_features.extend(self.lbp_features)
-        self.all_features.extend(self.superpixel_features)
+        self.all_features = np.array(all_features, dtype=np.float32)
 
-        return np.array(self.all_features, dtype=np.float32)
+        return self.all_features
 
     def _color_features(self, bins=32):
         features = []
@@ -100,4 +101,4 @@ class FeatureExtractor:
         self.superpixel_features = features
 
     def _debug(self):
-        print("Extracting color, hog, lbp and superpixel features...")
+        print("Extracting color, hog, lbp and superpixel features.")
