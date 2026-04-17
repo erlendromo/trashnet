@@ -1,3 +1,6 @@
 pytest==9.0.3
 python-dotenv==1.2.2
 numpy==2.4.4
+opencv_python==4.13.0.92
+scikit_image==0.26.0
+scikit_learn==1.8.0

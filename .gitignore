@@ -1,5 +1,7 @@
 **.env
 **__pycache__**
 **.venv**
-**dataset**
+**dataset
+**dataset-original.zip
 **.DS_Store
+**.pytest_cache
