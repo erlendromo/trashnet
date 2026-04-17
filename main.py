@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from src.classifier import Classifier
 from src.dataset import Dataset
 from src.feature_extractor import FeatureExtractor
-from src.feature_scaler import FeatureScaler
 from src.preprocessor import Preprocessor
 
 # Load .env file
@@ -27,10 +26,10 @@ def elapsed(start):
     end = time()
     elapsed = end - start
 
-    elapsed_minutes = elapsed / 60 if elapsed >= 60 else 0
-    elapsed_seconds = elapsed % 60 if elapsed >= 60 else elapsed if elapsed < 60 else 0
+    minutes = elapsed / 60 if elapsed >= 60 else 0
+    seconds = elapsed % 60 if elapsed >= 60 else elapsed if elapsed < 60 else 0
 
-    print(f"Elapsed time: {elapsed_minutes}min and {elapsed_seconds:.0f}sec")
+    print(f"\nProgram completed in {minutes:.0f}min and {seconds:.0f}sec")
 
 
 def extract_features(dataset, debug):
@@ -57,6 +56,10 @@ def main():
     dataset = Dataset(debug=debug)
     training_set, validation_set, testing_set = dataset.load_and_split()
 
+    print(
+        "Dataset size: ", (len(training_set) + len(validation_set) + len(testing_set))
+    )
+
     training_features, training_labels = extract_features(
         dataset=training_set, debug=debug
     )
@@ -67,10 +70,13 @@ def main():
         dataset=testing_set, debug=debug
     )
 
-    feature_scaler = FeatureScaler()
-    scaled_training_features = feature_scaler.fit_transform(training_features)
-    scaled_validation_features = feature_scaler.transform(validation_features)
-    scaled_testing_features = feature_scaler.transform(testing_features)
+    classifier = Classifier(model="svm", debug=debug)
+    classifier.classify(
+        training_features,
+        training_labels,
+        testing_features,
+        testing_labels,
+    )
 
     elapsed(start)
 
