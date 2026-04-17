@@ -15,13 +15,17 @@ ACCEPTED_FORMATS = (".jpeg", ".jpg", ".png")
 
 
 class Dataset:
-    def __init__(self, labels=LABELS, test_size=0.15, val_size=0.10):
+    def __init__(self, labels=LABELS, test_size=0.15, val_size=0.10, debug=False):
         self.dataset_path = os.getenv("DATASET_PATH", "./dataset")
         self.labels = labels
         self.test_size = max(0.1, min(test_size, 0.3))
         self.val_size = max(0.05, min(val_size, 0.15))
+        self.debug = debug
 
     def load_and_split(self):
+        if self.debug:
+            self._debug()
+
         self._load()
         self._split()
 
@@ -75,3 +79,12 @@ class Dataset:
         self.train = list(zip(train_paths, train_labels))
         self.val = list(zip(val_paths, val_labels))
         self.test = list(zip(test_paths, test_labels))
+
+    def _debug(self):
+        train = f"{(1.0 - self.val_size - self.test_size) * 100}%"
+        val = f"{self.val_size * 100}%"
+        test = f"{self.test_size * 100}%"
+
+        print(
+            f"Loading dataset: splitting into {train} training, {val} validation and {test} testing..."
+        )
