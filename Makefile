@@ -1,16 +1,15 @@
-venv:
+.venv:
 	@python3 -m venv .venv
 
-activate:
-	@source .venv/bin/activate
+.venv/installed: requirements.txt | .venv
+	@.venv/bin/python -m pip install --upgrade pip
+	@.venv/bin/python -m pip install -r requirements.txt
+	@touch .venv/installed
 
-dependencies:
-	@python -m pip install -r requirements.txt
+test: .venv/installed
+	@.venv/bin/python -m pytest -v
 
-test:
-	@python -m pytest -v
+run: .venv/installed
+	@.venv/bin/python -m main
 
-run:
-	@python -m main
-
-.PHONY: venv activate dependencies test run
+.PHONY: test run
