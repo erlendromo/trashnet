@@ -30,7 +30,7 @@ class DatasetLoader:
         return self.train, self.val, self.test
 
     def _load(self):
-        self.dataset = []
+        dataset = []
 
         for label in self.labels:
             label_path = os.path.join(self.dataset_path, label)
@@ -47,7 +47,9 @@ class DatasetLoader:
                 if not os.path.isfile(image_path):
                     continue
 
-                self.dataset.append((image_path, label))
+                dataset.append((image_path, label))
+
+        self.dataset = dataset
 
     def _split(self, seed=42):
         if not self.dataset:
