@@ -2,24 +2,22 @@ import os
 
 from sklearn.model_selection import train_test_split
 
-LABELS = (
-    "cardboard",
-    "glass",
-    "metal",
-    "paper",
-    "plastic",
-    "trash",
-)
-
-ACCEPTED_FORMATS = (".jpeg", ".jpg", ".png")
+from src.utils.constants import ACCEPTED_IMAGE_FORMATS, ALL_LABELS, RECOMMENDED_LABELS
 
 
-class Dataset:
-    def __init__(self, labels=LABELS, test_size=0.15, val_size=0.10, debug=False):
-        self.dataset_path = os.getenv("DATASET_PATH", "./dataset")
+class DatasetLoader:
+    def __init__(
+        self,
+        labels=RECOMMENDED_LABELS,
+        dataset_path="./dataset",
+        test_size=0.15,
+        val_size=0.10,
+        debug=False,
+    ):
+        self.dataset_path = dataset_path
         self.labels = labels
         self.test_size = max(0.1, min(test_size, 0.3))
-        self.val_size = max(0.05, min(val_size, 0.15))
+        self.val_size = max(0.0, min(val_size, 0.15))
         self.debug = debug
 
     def load_and_split(self):
@@ -40,23 +38,21 @@ class Dataset:
             if not os.path.exists(label_path):
                 continue
 
-            for file in os.listdir(label_path):
-                if not file.lower().endswith(ACCEPTED_FORMATS):
+            for image_name in os.listdir(label_path):
+                if not image_name.lower().endswith(ACCEPTED_IMAGE_FORMATS):
                     continue
 
-                file_path = os.path.join(label_path, file)
+                image_path = os.path.join(label_path, image_name)
 
-                if not os.path.isfile(file_path):
+                if not os.path.isfile(image_path):
                     continue
 
-                self.dataset.append((file_path, label))
-
-        if not self.dataset:
-            raise ValueError("Dataset is empty. Check dataset path and structure.")
-
-        return self.dataset
+                self.dataset.append((image_path, label))
 
     def _split(self, seed=42):
+        if not self.dataset:
+            raise ValueError("dataset is empty, check dataset path and structure")
+
         paths = [sample[0] for sample in self.dataset]
         labels = [sample[1] for sample in self.dataset]
 
@@ -86,5 +82,5 @@ class Dataset:
         test = f"{self.test_size * 100}%"
 
         print(
-            f"Loading dataset: splitting into {train} training, {val} validation and {test} testing..."
+            f"Loading dataset: splitting into {train} training, {val} validation and {test} testing"
         )
