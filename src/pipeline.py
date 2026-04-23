@@ -1,62 +1,43 @@
 from src.classifier import Classifier
 from src.dataset_loader import DatasetLoader
 from src.processor import Processor
+import src.utils.feature_plotter as fp
+import src.utils.scaler as sc
 
 
 class Pipeline:
-    def __init__(
-        self,
-        dataset_path,
-        save_model,
-        load_model,
-        classifier_type,
-        debug=False,
-    ):
-        self.classifier = None
-        self.classifier_type = classifier_type
-        self.save_model = save_model
-        self.debug = debug
+    def __init__(self, config=None):
+        if config is None:
+            raise ValueError("config cannot be 'None'")
 
-        dataset = DatasetLoader(dataset_path=dataset_path, debug=self.debug)
-        train_tuple, val_tuple, test_tuple = dataset.load_and_split()
+        self.config = config
 
-        self.test_features, self.test_labels = self._extract_features_and_labels(
-            test_tuple, "testing"
-        )
-
-        if load_model is not None:
-            self.classifier = Classifier(debug=self.debug)
-            self.classifier.load(load_model)
-        else:
-            self.train_features, self.train_labels = self._extract_features_and_labels(
-                train_tuple, "training"
-            )
-
-            self.val_features, self.val_labels = self._extract_features_and_labels(
-                val_tuple, "validation"
-            )
 
     def execute(self):
-        if self.classifier is None:
-            self.classifier = Classifier(
-                classifier_type=self.classifier_type, debug=self.debug
-            )
-            self.classifier.train(
-                self.train_features,
-                self.train_labels,
-                self.val_features,
-                self.val_labels,
-            )
+        dataset = DatasetLoader(dataset_path=self.config.dataset_path, test_size=self.config.test_size, val_size=self.config.val_size)
+        train_tuple, val_tuple, test_tuple = dataset.load_and_split()
 
-        self.classifier.evaluate(self.test_features, self.test_labels)
+        print(f"Applying the following preprocessing configuration:\nNoise: {self.config.noise}\nSegmentation: {self.config.segment}\n")
+        print(f"Extracting the following features:\nLBP: {self.config.lbp}\nGLCM: {self.config.glcm}\nHSV: {self.config.hsv}\nGabor: {self.config.gabor}\nSIFT: {self.config.sift}\nHu: {self.config.hu}\nHOG: {self.config.hog}\nSuperpixel: {self.config.superpixel}\n")
+        print(f"-----\nThis may take a couple of minutes...\n-----\n")
 
-        if self.save_model is not None:
-            self.classifier.save(self.save_model)
+        train_features, y_train = self._extract_features_and_labels(train_tuple)
+        val_features, y_val = self._extract_features_and_labels(val_tuple)
+        test_features, y_test = self._extract_features_and_labels(test_tuple)
 
-    def _extract_features_and_labels(self, dataset, dataset_type):
-        processor = Processor(
-            dataset=dataset, dataset_type=dataset_type, debug=self.debug
-        )
+        X_train, X_val, X_test, _ = sc.scale_feature_vectors(train_features, val_features, test_features)
+
+        if self.config.visualize:
+            fp.plot_pca_feature_space(X=X_train, y=y_train)
+            fp.plot_tsne_feature_space(X=X_train, y=y_train)
+            fp.plot_umap_feature_space(X=X_train, y=y_train)
+
+        classifier = Classifier(X_train, y_train, X_val, y_val, X_test, y_test)
+        classifier.classify()
+
+
+    def _extract_features_and_labels(self, dataset_tuple):
+        processor = Processor(dataset_tuple=dataset_tuple, config=self.config)
         features, labels = processor.process()
 
         return features, labels
