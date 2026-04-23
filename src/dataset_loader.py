@@ -1,8 +1,25 @@
 import os
-
 from sklearn.model_selection import train_test_split
 
-from src.utils.constants import ACCEPTED_IMAGE_FORMATS, ALL_LABELS, RECOMMENDED_LABELS
+
+ALL_LABELS = (
+    "cardboard",
+    "glass",
+    "metal",
+    "paper",
+    "plastic",
+    "trash",
+)
+
+RECOMMENDED_LABELS = (
+    "cardboard",
+    "glass",
+    "metal",
+    "paper",
+    "plastic",
+)
+
+ACCEPTED_IMAGE_FORMATS = (".jpeg", ".jpg", ".png")
 
 
 class DatasetLoader:
@@ -11,23 +28,28 @@ class DatasetLoader:
         labels=RECOMMENDED_LABELS,
         dataset_path="./dataset",
         test_size=0.15,
-        val_size=0.10,
-        debug=False,
+        val_size=0.10
     ):
         self.dataset_path = dataset_path
         self.labels = labels
-        self.test_size = max(0.1, min(test_size, 0.3))
-        self.val_size = max(0.0, min(val_size, 0.15))
-        self.debug = debug
+        self.test_size = max(0.10, min(test_size, 0.25))
+        self.val_size = max(0.05, min(val_size, 0.20))
+
 
     def load_and_split(self):
-        if self.debug:
-            self._debug()
+        train = f"{(1.0 - self.val_size - self.test_size) * 100}%"
+        val = f"{self.val_size * 100}%"
+        test = f"{self.test_size * 100}%"
+
+        print(
+            f"Loading dataset: splitting into {train} training, {val} validation and {test} testing\n"
+        )
 
         self._load()
         self._split()
 
         return self.train, self.val, self.test
+
 
     def _load(self):
         dataset = []
@@ -51,9 +73,12 @@ class DatasetLoader:
 
         self.dataset = dataset
 
+
     def _split(self, seed=42):
         if not self.dataset:
             raise ValueError("dataset is empty, check dataset path and structure")
+
+        print(f"Total dataset size: {len(self.dataset)} images\n")
 
         paths = [sample[0] for sample in self.dataset]
         labels = [sample[1] for sample in self.dataset]
@@ -77,12 +102,3 @@ class DatasetLoader:
         self.train = list(zip(train_paths, train_labels))
         self.val = list(zip(val_paths, val_labels))
         self.test = list(zip(test_paths, test_labels))
-
-    def _debug(self):
-        train = f"{(1.0 - self.val_size - self.test_size) * 100}%"
-        val = f"{self.val_size * 100}%"
-        test = f"{self.test_size * 100}%"
-
-        print(
-            f"Loading dataset: splitting into {train} training, {val} validation and {test} testing"
-        )
