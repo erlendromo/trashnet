@@ -1,78 +1,151 @@
-import numpy as np
-from joblib import dump, load
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-
-from src.utils.constants import CLASSIFIERS
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Classifier:
-    def __init__(self, classifier_type="svm", debug=False):
-        self.classifier_type = (
-            classifier_type if classifier_type in CLASSIFIERS else "svm"
+    def __init__(self, X_train, y_train, X_val, y_val, X_test, y_test):
+        self.X_train = X_train
+        self.y_train = y_train
+
+        self.X_val = X_val
+        self.y_val = y_val
+
+        self.X_test = X_test
+        self.y_test = y_test
+
+
+    def classify(self):
+        best_model, best_params = self._train()
+
+        test_accuracy = self._evaluate(
+            self.best_model,
+            self.X_test,
+            self.y_test,
+            dataset_name="Test Set"
         )
-        self.debug = debug
 
-        if self.classifier_type == "svm":
-            self.classifier = Pipeline(
-                [
-                    ("scaler", StandardScaler()),
-                    (
-                        "clf",
-                        SVC(C=10, kernel="rbf", gamma="scale", class_weight="balanced"),
-                    ),
-                ]
-            )
 
-        elif self.classifier_type == "knn":
-            self.classifier = Pipeline(
-                [
-                    ("scaler", StandardScaler()),
-                    ("clf", KNeighborsClassifier(n_neighbors=5, weights="distance")),
-                ]
-            )
+    def _train(self):
+        """
+        Train an RBF SVM using the training set,
+        optimize hyperparameters using the validation set,
+        and evaluate final performance on the test set.
 
-        elif self.classifier_type == "rf":
-            self.classifier = Pipeline(
-                [
-                    (
-                        "clf",
-                        RandomForestClassifier(
-                            n_estimators=200, class_weight="balanced_subsample"
-                        ),
-                    ),
-                ]
-            )
+        Returns
+        -------
+        best_model : trained sklearn model
+        best_params : dict
+        test_accuracy : float
+        """
 
-    # TODO Add validation set optimization
-    def train(self, train_features, train_labels, val_features, val_labels):
-        train_features = np.array(train_features)
-        train_labels = np.array(train_labels)
-        val_features = np.array(val_features)
-        val_labels = np.array(val_labels)
+        # -------------------------------------------------
+        # Hyperparameter search space
+        # -------------------------------------------------
 
-        self.classifier.fit(train_features, train_labels)
+        C_values = [0.1, 1, 10, 100, 1000]
+        gamma_values = [0.0001, 0.001, 0.01, 0.1, 1]
 
-    def save(self, path="model.joblib"):
-        dump(self.classifier, path)
-        print(f"Saved model as {path}")
+        best_model = None
+        best_params = None
+        best_val_accuracy = 0
 
-    def load(self, path="model.joblib"):
-        self.classifier = load(path)
-        print(f"Loaded model from {path}")
+        # -------------------------------------------------
+        # Validation-based hyperparameter tuning
+        # -------------------------------------------------
 
-    def predict(self, features):
-        features = np.array(features)
-        return self.classifier.predict(features)
+        print("Starting validation-based hyperparameter search...\n")
 
-    def evaluate(self, features, labels):
-        predictions = self.predict(features)
-        print(classification_report(labels, predictions, zero_division=0))
-        print(f"Accuracy: {(accuracy_score(labels, predictions) * 100):.2f}")
+        for C in C_values:
+            for gamma in gamma_values:
+                model = SVC(
+                    kernel="rbf",
+                    C=C,
+                    gamma=gamma,
+                    random_state=42
+                )
 
-    def _debug(self):
-        print(f"Training and classifying using {self.classifier_type}.")
+                # Train on training set
+                model.fit(self.X_train, self.y_train)
+
+                # Evaluate on validation set
+                val_predictions = model.predict(self.X_val)
+                val_accuracy = accuracy_score(
+                    self.y_val,
+                    val_predictions
+                )
+
+                print(
+                    f"C={C:<6} gamma={gamma:<6} "
+                    f"Validation Accuracy={val_accuracy:.4f}"
+                )
+
+                # Keep best model
+                if val_accuracy > best_val_accuracy:
+                    best_val_accuracy = val_accuracy
+                    best_model = model
+                    best_params = {
+                        "C": C,
+                        "gamma": gamma
+                    }
+
+        print("\nBest Hyperparameters Found:")
+        print(best_params)
+        print(f"Best Validation Accuracy: {best_val_accuracy:.4f}")
+
+        self.best_model = best_model
+        self.best_params = best_params
+
+        return best_model, best_params
+
+
+    def _evaluate(self, model, X, y, dataset_name="Dataset"):
+        """
+        Evaluate a trained model on a given dataset.
+
+        Parameters
+        ----------
+        model : sklearn model
+            Trained classifier
+
+        X : np.ndarray
+            Feature vectors
+
+        y : np.ndarray
+            Ground truth labels
+
+        dataset_name : str
+            Name used for printing results
+
+        Returns
+        -------
+        accuracy : float
+        """
+
+        predictions = model.predict(X)
+        classes = np.unique(y)
+
+        accuracy = accuracy_score(y, predictions)
+        cr = classification_report(y, predictions)
+        cm = confusion_matrix(y, predictions)
+
+        print(f"\n{dataset_name} Evaluation")
+        print(f"Accuracy: {accuracy:.4f}")
+
+        print("\nClassification Report:")
+        print(cr)
+
+        print("\nConfusion Matrix:")
+        print(cm)
+
+        plt.imshow(cm)
+        plt.title("Confusion Matrix")
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.xticks(range(len(classes)), classes, rotation=90)
+        plt.yticks(range(len(classes)), classes)
+        plt.colorbar()
+        plt.show()
+
+        return accuracy
