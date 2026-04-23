@@ -3,36 +3,29 @@ from src.processing.preprocessor import Preprocessor
 
 
 class Processor:
-    def __init__(self, dataset=None, dataset_type=None, debug=False):
-        if dataset is None:
+    def __init__(self, dataset_tuple, config):
+        if dataset_tuple is None:
             raise ValueError("dataset cannot be 'None'")
 
-        self.dataset = dataset
-        self.dataset_type = dataset_type if dataset_type is not None else "unknown"
-        self.debug = debug
+        if config is None:
+            raise ValueError("config cannot be 'None'")
+
+        self.dataset_tuple = dataset_tuple
+        self.config = config
+
 
     def process(self):
-        if self.debug:
-            self._debug()
+        all_features = []
+        all_labels = []
 
-        features = []
-        labels = []
-
-        for image_path, label in self.dataset:
-            preprocessor = Preprocessor(image_path=image_path)
+        for image_path, label in self.dataset_tuple:
+            preprocessor = Preprocessor(image_path=image_path, noise=self.config.noise, segment=self.config.segment, visualize=self.config.visualize)
             preprocessed_image = preprocessor.process()
 
-            feature_extractor = FeatureExtractor(image=preprocessed_image)
+            feature_extractor = FeatureExtractor(image=preprocessed_image, lbp=self.config.lbp, glcm=self.config.glcm, hsv=self.config.hsv, gabor=self.config.gabor, sift=self.config.sift, hu=self.config.hu, hog=self.config.hog, superpixel=self.config.superpixel)
+            features = feature_extractor.extract()
 
-            image_features = feature_extractor.extract()
+            all_features.append(features)
+            all_labels.append(label)
 
-            features.append(image_features)
-            labels.append(label)
-
-        self.features = features
-        self.labels = labels
-
-        return self.features, self.labels
-
-    def _debug(self):
-        print(f"Processing images in {self.dataset_type} set")
+        return all_features, all_labels
