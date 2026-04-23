@@ -4,13 +4,29 @@ import time
 
 class Config:
     def __init__(self):
+        # Track time for program execution
         self.start_time = time.time()
 
-        debug = os.getenv("DEBUG", "False")
-        self.debug = True if debug == "True" else False
-
+        # Dataset
         self.dataset_path = os.getenv("DATASET_PATH", "./dataset")
+        self.test_size = float(os.getenv("TEST_SIZE", "0.15"))
+        self.val_size = float(os.getenv("VAL_SIZE", "0.10"))
 
+        # Preprocessing
+        self.noise = True if os.getenv("NOISE", False) == "True" else False
+        self.segment = True if os.getenv("SEGMENT", False) == "True" else False
+
+        # Feature extraction
+        self.lbp = True if os.getenv("LBP", False) == "True" else False
+        self.glcm = True if os.getenv("GLCM", False) == "True" else False
+        self.hsv = True if os.getenv("HSV", False) == "True" else False
+        self.gabor = True if os.getenv("GABOR", False) == "True" else False
+        self.sift = True if os.getenv("SIFT", False) == "True" else False
+        self.hu = True if os.getenv("HU", False) == "True" else False
+        self.hog = True if os.getenv("HOG", False) == "True" else False
+        self.superpixel = True if os.getenv("SUPERPIXEL", False) == "True" else False
+
+        # Classification
         save_model = os.getenv("SAVE_MODEL", "")
         self.save_model = (
             save_model
@@ -25,12 +41,9 @@ class Config:
             else None
         )
 
-        self.classifier_type = os.getenv("CLASSIFIER_TYPE", "svm")
+        # Visualization
+        self.visualize = True if os.getenv("VISUALIZE", False) == "True" else False
 
-    def print(self):
-        print(
-            f"Running program in the following configuration:\n\n-----\nDebug mode: {self.debug}\nDataset: {self.dataset_path}\nLoad from pretrained model: {'False' if self.load_model is None else 'True'}\nSave model: {'False' if self.save_model is None else 'True'}\nClassifier: {self.classifier_type}\n-----\n"
-        )
 
     def elapsed_time(self):
         elapsed_time = time.time() - self.start_time
