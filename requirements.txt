@@ -5,3 +5,5 @@ opencv_python==4.13.0.92
 scikit_image==0.26.0
 scikit_learn==1.8.0
 joblib==1.5.3
+matplotlib==3.10.8
+umap-learn==0.5.12

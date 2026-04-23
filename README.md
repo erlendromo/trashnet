@@ -21,7 +21,7 @@ For ease-of-use, download the `Makefile` extension for your OS.
 1. Clone the repository
 2. Create a `.env` file based on the provided `.env.example` with your preferred configuration.
 3. If you have the Makefile extension, simply run the `Makefile` commands:
-    - Optional: `make test`
+    - Optional: `make test` (Currently not supported...)
     - `make run`
 4. Alternatively copy the commands in the `Makefile` and execute them in your terminal. If you do this, make sure to run all the commands in the file in order from top to bottom.
 
