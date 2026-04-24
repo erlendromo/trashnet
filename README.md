@@ -26,7 +26,7 @@ For ease-of-use, download the `Makefile` extension for your OS.
 4. Alternatively copy the commands in the `Makefile` and execute them in your terminal. If you do this, make sure to run all the commands in the file in order from top to bottom.
 
 ## Results
-
+This project managed to get an accuracy score of `82.73%`, outperforming the original trashnet implementation by `~20%`. For further details, run the project for yourself.
 
 ## Acknowledgements
 I want to give a shoutout to my fellow students, and the course coordinator!
