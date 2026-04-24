@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from skimage.feature import local_binary_pattern, graycomatrix, graycoprops, hog
+from skimage.segmentation import slic
 
 
 class FeatureExtractor:

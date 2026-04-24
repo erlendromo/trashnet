@@ -19,10 +19,27 @@ class Processor:
         all_labels = []
 
         for image_path, label in self.dataset_tuple:
-            preprocessor = Preprocessor(image_path=image_path, noise=self.config.noise, segment=self.config.segment, visualize=self.config.visualize)
+            preprocessor = Preprocessor(
+                image_path=image_path,
+                noise=self.config.noise,
+                segment=self.config.segment,
+                visualize=self.config.visualize
+            )
+
             preprocessed_image = preprocessor.process()
 
-            feature_extractor = FeatureExtractor(image=preprocessed_image, lbp=self.config.lbp, glcm=self.config.glcm, hsv=self.config.hsv, gabor=self.config.gabor, sift=self.config.sift, hu=self.config.hu, hog=self.config.hog, superpixel=self.config.superpixel)
+            feature_extractor = FeatureExtractor(
+                image=preprocessed_image,
+                lbp=self.config.lbp,
+                glcm=self.config.glcm,
+                hsv=self.config.hsv,
+                gabor=self.config.gabor,
+                sift=self.config.sift,
+                hu=self.config.hu,
+                hog=self.config.hog,
+                superpixel=self.config.superpixel
+            )
+
             features = feature_extractor.extract()
 
             all_features.append(features)

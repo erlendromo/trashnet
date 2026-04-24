@@ -44,8 +44,8 @@ class Classifier:
         # Hyperparameter search space
         # -------------------------------------------------
 
-        C_values = [0.1, 1, 10, 100, 1000]
-        gamma_values = [0.0001, 0.001, 0.01, 0.1, 1]
+        C_values = [0.001, 0.01, 0.1, 1, 10, 100]
+        gamma_values = [0.001, 0.01, 0.1, 1, 10, 100]
 
         best_model = None
         best_params = None
@@ -123,12 +123,12 @@ class Classifier:
         accuracy : float
         """
 
-        predictions = model.predict(X)
+        y_predictions = model.predict(X)
         classes = np.unique(y)
 
-        accuracy = accuracy_score(y, predictions)
-        cr = classification_report(y, predictions)
-        cm = confusion_matrix(y, predictions)
+        accuracy = accuracy_score(y, y_predictions)
+        cr = classification_report(y, y_predictions, zero_division=0)
+        cm = confusion_matrix(y, y_predictions)
 
         print(f"\n{dataset_name} Evaluation")
         print(f"Accuracy: {accuracy:.4f}")
